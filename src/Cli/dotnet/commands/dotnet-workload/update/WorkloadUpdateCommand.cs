@@ -43,6 +43,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly string _userHome;
         private readonly string _dotnetPath;
         private readonly string _tempDirPath;
+        private readonly bool _disableSigningVerification;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -65,6 +66,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             _fromPreviousSdk = parseResult.ValueForOption<bool>(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _downloadToCacheOption = parseResult.ValueForOption<string>(WorkloadUpdateCommandParser.DownloadToCacheOption);
             _verbosity = parseResult.ValueForOption<VerbosityOptions>(WorkloadUpdateCommandParser.VerbosityOption);
+            _disableSigningVerification = parseResult.ValueForOption<bool>(WorkloadUpdateCommandParser.DisableSigningVerificationOption);
             _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.ValueForOption<string>(WorkloadUpdateCommandParser.VersionOption), version, _dotnetPath);
             _tempDirPath = tempDirPath ?? (string.IsNullOrWhiteSpace(parseResult.ValueForOption<string>(WorkloadUpdateCommandParser.TempDirOption)) ?
@@ -83,7 +85,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 dotnetDir, _tempDirPath, packageSourceLocation: _packageSourceLocation);
             _userHome = userHome ?? CliFolderPathCalculator.DotnetHomePath;
             var tempPackagesDir = new DirectoryPath(Path.Combine(_tempDirPath, "dotnet-sdk-advertising-temp"));
-            _nugetPackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(tempPackagesDir, filePermissionSetter: null,  new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir),new NullLogger());
+            _nugetPackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(tempPackagesDir, filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir), new NullLogger(),
+                                          disableSigningVerification: _disableSigningVerification);
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter, _workloadManifestProvider, _nugetPackageDownloader, _userHome, _tempDirPath, _packageSourceLocation);
         }
 

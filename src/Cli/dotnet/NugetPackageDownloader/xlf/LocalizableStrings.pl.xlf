@@ -27,6 +27,11 @@
         <target state="new">{0} is not found in NuGet feeds {1}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkipNuGetpackageSigningValidation">
+        <source>Warning: skipping package signing verification.</source>
+        <target state="new">Warning: skipping package signing verification.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationSDKNotFirstParty">
         <source>Skip NuGet package signing validation. The current .NET SDK is not signed by first party.</source>
         <target state="new">Skip NuGet package signing validation. The current .NET SDK is not signed by first party.</target>

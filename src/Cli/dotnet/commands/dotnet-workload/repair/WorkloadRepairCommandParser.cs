@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option VerbosityOption = CommonOptions.VerbosityOption();
 
+        public static readonly Option DisableSigningVerificationOption = WorkloadInstallCommandParser.DisableSigningVerificationOption;
+
         public static Command GetCommand()
         {
             var command = new Command("repair", LocalizableStrings.CommandDescription);
@@ -24,6 +26,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(ConfigOption);
             command.AddOption(AddSourceOption);
             command.AddOption(VerbosityOption);
+            command.AddOption(DisableSigningVerificationOption);
 
             return command;
         }

@@ -28,6 +28,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
         private IWorkloadManifestProvider _workloadManifestProvider;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _dotnetPath;
+        private readonly bool _disableSigningVerification;
 
         public WorkloadRepairCommand(
             ParseResult parseResult,
@@ -44,6 +45,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             _verbosity = parseResult.ValueForOption<VerbosityOptions>(WorkloadRepairCommandParser.VerbosityOption);
             _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.ValueForOption<string>(WorkloadRepairCommandParser.VersionOption), version, _dotnetPath);
+            _disableSigningVerification = parseResult.ValueForOption<bool>(WorkloadRepairCommandParser.DisableSigningVerificationOption);
 
             var configOption = parseResult.ValueForOption<string>(WorkloadRepairCommandParser.ConfigOption);
             var addSourceOption = parseResult.ValueForOption<string[]>(WorkloadRepairCommandParser.AddSourceOption);
@@ -61,7 +63,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             nugetPackageDownloader ??= new NuGetPackageDownloader(
                 tempPackagesDir,
                 filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, nullLogger), nullLogger);
+                new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, nullLogger),
+                nullLogger,
+                disableSigningVerification: _disableSigningVerification);
             _workloadInstaller = workloadInstaller ?? 
                 WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand, _workloadResolver, _verbosity, nugetPackageDownloader, dotnetDir, tempDirPath, _packageSourceLocation);
         }

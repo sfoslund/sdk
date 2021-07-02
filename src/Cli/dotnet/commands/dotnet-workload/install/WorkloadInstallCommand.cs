@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         private readonly IReporter _reporter;
         private readonly bool _skipManifestUpdate;
+        private readonly bool _disableSigningVerification;
         private readonly string _fromCacheOption;
         private readonly string _downloadToCacheOption;
         private readonly PackageSourceLocation _packageSourceLocation;
@@ -63,6 +64,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _skipManifestUpdate = parseResult.ValueForOption<bool>(WorkloadInstallCommandParser.SkipManifestUpdateOption);
             _includePreviews = parseResult.ValueForOption<bool>(WorkloadInstallCommandParser.IncludePreviewOption);
             _printDownloadLinkOnly = parseResult.ValueForOption<bool>(WorkloadInstallCommandParser.PrintDownloadLinkOnlyOption);
+            _disableSigningVerification = parseResult.ValueForOption<bool>(WorkloadInstallCommandParser.DisableSigningVerificationOption);
             _fromCacheOption = parseResult.ValueForOption<string>(WorkloadInstallCommandParser.FromCacheOption);
             _downloadToCacheOption = parseResult.ValueForOption<string>(WorkloadInstallCommandParser.DownloadToCacheOption);
             _workloadIds = parseResult.ValueForArgument<IEnumerable<string>>(WorkloadInstallCommandParser.WorkloadIdArgument).ToList().AsReadOnly();
@@ -86,7 +88,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                       new NuGetPackageDownloader(tempPackagesDir,
                                           filePermissionSetter: null,
                                           new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, new NullLogger()),
-                                          new NullLogger());
+                                          new NullLogger(),
+                                          disableSigningVerification: _disableSigningVerification);
             _workloadInstaller = workloadInstaller ?? 
                 WorkloadInstallerFactory.GetWorkloadInstaller(_reporter, sdkFeatureBand, _workloadResolver, _verbosity, _nugetPackageDownloader, _dotnetPath, _tempDirPath, _packageSourceLocation);
             _userHome = userHome ?? CliFolderPathCalculator.DotnetHomePath;

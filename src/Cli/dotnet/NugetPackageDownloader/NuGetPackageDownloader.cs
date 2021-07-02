@@ -32,6 +32,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         };
 
         private readonly IFilePermissionSetter _filePermissionSetter;
+
+        private readonly bool _disableSigningVerification;
         
         /// <summary>
         /// In many commands we don't passing NuGetConsoleLogger and pass NullLogger instead to reduce the verbosity
@@ -46,13 +48,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
 
-        public NuGetPackageDownloader(DirectoryPath packageInstallDir, IFilePermissionSetter filePermissionSetter = null, IFirstPartyNuGetPackageSigningVerifier firstPartyNuGetPackageSigningVerifier = null, ILogger verboseLogger = null, IReporter reporter = null)
+        public NuGetPackageDownloader(DirectoryPath packageInstallDir, IFilePermissionSetter filePermissionSetter = null, IFirstPartyNuGetPackageSigningVerifier firstPartyNuGetPackageSigningVerifier = null,
+            ILogger verboseLogger = null, IReporter reporter = null, bool disableSigningVerification = false)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
             _firstPartyNuGetPackageSigningVerifier = firstPartyNuGetPackageSigningVerifier ?? new FirstPartyNuGetPackageSigningVerifier(tempDirectory: packageInstallDir, logger: _verboseLogger);
             _filePermissionSetter = new FilePermissionSetter();
+            _disableSigningVerification = disableSigningVerification;
         }
 
         public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -97,7 +101,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     string.Format("Downloading {0} version {1} failed", packageId, packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
+            if (!_disableSigningVerification)
+            {
+                VerifySigning(nupkgPath);
+            }
+            else
+            {
+                _reporter.WriteLine(LocalizableStrings.SkipNuGetpackageSigningValidation);
+            }
 
             return nupkgPath;
         }

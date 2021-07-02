@@ -30,6 +30,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option FromPreviousSdkOption = new Option<bool>("--from-previous-sdk", LocalizableStrings.FromPreviousSdkOptionDescription);
 
+        public static readonly Option DisableSigningVerificationOption = WorkloadInstallCommandParser.DisableSigningVerificationOption;
+
         public static Command GetCommand()
         {
             Command command = new("update", LocalizableStrings.CommandDescription);
@@ -48,6 +50,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(WorkloadCommandRestorePassThroughOptions.NoCacheOption);
             command.AddOption(WorkloadCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.AddOption(VerbosityOption);
+            command.AddOption(DisableSigningVerificationOption);
 
             return command;
         }

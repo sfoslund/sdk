@@ -52,6 +52,11 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option VerbosityOption = CommonOptions.VerbosityOption();
 
+        public static readonly Option DisableSigningVerificationOption = new Option<bool>("--disable-signing-verification")
+            {
+                IsHidden = true
+            };
+
         public static Command GetCommand()
         {
             var command = new Command("install", LocalizableStrings.CommandDescription);
@@ -66,6 +71,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(DownloadToCacheOption);
             command.AddOption(IncludePreviewOption);
             command.AddOption(TempDirOption);
+            command.AddOption(DisableSigningVerificationOption);
             command.AddOption(WorkloadCommandRestorePassThroughOptions.DisableParallelOption);
             command.AddOption(WorkloadCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
             command.AddOption(WorkloadCommandRestorePassThroughOptions.NoCacheOption);
