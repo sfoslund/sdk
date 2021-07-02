@@ -145,6 +145,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             finally
             {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
                 // Delete leftover dirs and files
                 foreach (var file in tempFilesToDelete)
                 {

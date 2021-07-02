@@ -89,6 +89,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 _cacheSettings,
                 _verboseLogger,
                 cancellationToken);
+            destinationStream.Close();
 
             if (!success)
             {
@@ -106,7 +107,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 if (_firstPartyNuGetPackageSigningVerifier.IsExecutableIsFirstPartySignedWithoutValidation(new FilePath(
-                    typeof(DotNet.Cli.Program).Assembly.Location)))
+                   typeof(DotNet.Cli.Program).Assembly.Location)))
                 {
                     if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
                         out string commandOutput))
@@ -118,12 +119,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 }
                 else
                 {
-                    if (!_validationMessagesDisplayed)
-                    {
-                        _reporter.WriteLine(
-                            LocalizableStrings.SkipNuGetpackageSigningValidationSDKNotFirstParty);
-                        _validationMessagesDisplayed = true;
-                    }
+                   if (!_validationMessagesDisplayed)
+                   {
+                       _reporter.WriteLine(
+                           LocalizableStrings.SkipNuGetpackageSigningValidationSDKNotFirstParty);
+                       _validationMessagesDisplayed = true;
+                   }
                 }
             }
             else
