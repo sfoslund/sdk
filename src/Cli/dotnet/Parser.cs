@@ -8,12 +8,15 @@ using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Reflection;
+
+using Microsoft.DotNet.Cli.Format;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.New;
 using Microsoft.DotNet.Tools.NuGet;
+
 using Command = System.CommandLine.Command;
 using ICommand = System.CommandLine.ICommand;
 
@@ -30,6 +33,7 @@ namespace Microsoft.DotNet.Cli
             BuildCommandParser.GetCommand(),
             BuildServerCommandParser.GetCommand(),
             CleanCommandParser.GetCommand(),
+            FormatCommandParser.GetCommand(),
             CompleteCommandParser.GetCommand(),
             FsiCommandParser.GetCommand(),
             ListCommandParser.GetCommand(),
@@ -55,18 +59,18 @@ namespace Microsoft.DotNet.Cli
         public static readonly Command InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
         // Options
-        public static readonly Option DiagOption = new Option<bool>(new[] { "-d", "--diagnostics" });
+        public static readonly Option<bool> DiagOption = new Option<bool>(new[] { "-d", "--diagnostics" });
 
-        public static readonly Option VersionOption = new Option<bool>("--version");
+        public static readonly Option<bool> VersionOption = new Option<bool>("--version");
 
-        public static readonly Option InfoOption = new Option<bool>("--info");
+        public static readonly Option<bool> InfoOption = new Option<bool>("--info");
 
-        public static readonly Option ListSdksOption = new Option<bool>("--list-sdks");
+        public static readonly Option<bool> ListSdksOption = new Option<bool>("--list-sdks");
 
-        public static readonly Option ListRuntimesOption = new Option<bool>("--list-runtimes");
+        public static readonly Option<bool> ListRuntimesOption = new Option<bool>("--list-runtimes");
 
         // Argument
-        public static readonly Argument DotnetSubCommand = new Argument<string>() { Arity = ArgumentArity.ExactlyOne, IsHidden = true };
+        public static readonly Argument<string> DotnetSubCommand = new Argument<string>() { Arity = ArgumentArity.ExactlyOne, IsHidden = true };
 
         private static Command ConfigureCommandLine(Command rootCommand, bool includeWorkloadCommands = false)
         {
@@ -160,7 +164,7 @@ namespace Microsoft.DotNet.Cli
 
         internal class DotnetHelpBuilder : HelpBuilder
         {
-            public DotnetHelpBuilder(IConsole console, int maxWidth = int.MaxValue) : base(console, maxWidth) { }
+            public DotnetHelpBuilder(IConsole console, int maxWidth = int.MaxValue) : base(console, Resources.Instance, maxWidth) { }
 
             public static Lazy<HelpBuilder> Instance = new Lazy<HelpBuilder>(() => {
                 int windowWidth;
@@ -172,7 +176,12 @@ namespace Microsoft.DotNet.Cli
                 {
                     windowWidth = int.MaxValue;
                 }
-                return new DotnetHelpBuilder(new SystemConsole(), windowWidth);
+
+                DotnetHelpBuilder dotnetHelpBuilder = new DotnetHelpBuilder(new SystemConsole(), windowWidth);
+                dotnetHelpBuilder.Customize(FormatCommandCommon.DiagnosticsOption, defaultValue: Tools.Format.LocalizableStrings.whichever_ids_are_listed_in_the_editorconfig_file);
+                dotnetHelpBuilder.Customize(FormatCommandCommon.IncludeOption, defaultValue: Tools.Format.LocalizableStrings.all_files_in_the_solution_or_project);
+                dotnetHelpBuilder.Customize(FormatCommandCommon.ExcludeOption, defaultValue: Tools.Format.LocalizableStrings.none);
+                return dotnetHelpBuilder;
             });
 
             public override void Write(ICommand command)

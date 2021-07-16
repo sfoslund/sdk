@@ -13,8 +13,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AssemblyPublicKeyTokenDoesNotMatch">
-        <source>{2} assembly token '{0}' does not match with {3} '{1}'.</source>
-        <target state="new">{2} assembly token '{0}' does not match with {3} '{1}'.</target>
+        <source>{2} assembly public key token '{0}' does not match with {3} '{1}'.</source>
+        <target state="new">{2} assembly public key token '{0}' does not match with {3} '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblySearchDirectoryDoesNotExist">
@@ -38,8 +38,13 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotAddAbstractMember">
-        <source>Cannot add abstract member '{0}' to {1} because does not exist on {2}</source>
-        <target state="new">Cannot add abstract member '{0}' to {1} because does not exist on {2}</target>
+        <source>Cannot add abstract member '{0}' to {1} because it does not exist on {2}</source>
+        <target state="new">Cannot add abstract member '{0}' to {1} because it does not exist on {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotAddMemberToInterface">
+        <source>Cannot add interface member '{0}' to {1} because it does not exist on {2}</source>
+        <target state="new">Cannot add interface member '{0}' to {1} because it does not exist on {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">

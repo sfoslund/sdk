@@ -280,6 +280,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(true)]
         [InlineData(false)]

@@ -15,6 +15,8 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Microsoft.DotNet.Configurer;
 using NuGet.Common;
+using System.Text.Json;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -81,7 +83,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 // Never surface messages on background updates
             }
-}
+        }
 
         public async Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync()
         {
@@ -103,8 +105,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         public IEnumerable<(
-            ManifestId manifestId, 
-            ManifestVersion existingVersion, 
+            ManifestId manifestId,
+            ManifestVersion existingVersion,
             ManifestVersion newVersion,
             Dictionary<WorkloadId, WorkloadDefinition> Workloads)> CalculateManifestUpdates()
         {
@@ -129,6 +131,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         advertisingManifestVersionAndWorkloads.Value.Workloads));
                 }
             }
+
+            return manifestUpdates;
+        }
+
+        public IEnumerable<(ManifestId manifestId, ManifestVersion existingVersion, ManifestVersion newVersion)> CalculateManifestRollbacks(string rollbackDefinitionFilePath)
+        {
+            var currentManifestIds = GetInstalledManifestIds();
+            var manifestRollbacks = ParseRollbackDefinitionFile(rollbackDefinitionFilePath);
+
+            if (!new HashSet<ManifestId>(currentManifestIds).SetEquals(manifestRollbacks.Select(manifest => manifest.Item1)))
+            {
+                throw new Exception(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath));
+            }
+
+            var manifestUpdates = manifestRollbacks
+                .Select(manifest => (manifest.Item1, GetInstalledManifestVersion(manifest.Item1), manifest.Item2));
 
             return manifestUpdates;
         }
@@ -360,6 +378,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        private IEnumerable<(ManifestId, ManifestVersion)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath)
+        {
+            if (!File.Exists(rollbackDefinitionFilePath))
+            {
+                throw new ArgumentException(string.Format(LocalizableStrings.RollbackDefinitionFileDoesNotExist, rollbackDefinitionFilePath));
+            }
+            var fileContent = File.ReadAllText(rollbackDefinitionFilePath);
+            return JsonSerializer.Deserialize<IDictionary<string, string>>(fileContent)
+                .Select(manifest => (new ManifestId(manifest.Key), new ManifestVersion(manifest.Value)));
+        }
+
         private bool BackgroundUpdatesAreDisabled() =>
             bool.TryParse(_getEnvironmentVariable("DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE"), out var disableEnvVar) && disableEnvVar;
 
@@ -368,7 +397,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) =>
             Path.Combine(_userHome, ".dotnet", "sdk-advertising", featureBand.ToString(), manifestId.ToString());
 
+        //internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId) =>
+        //    new PackageId($"{manifestId}.Manifest-{featureBand}");
+
         internal static PackageId GetManifestPackageId(SdkFeatureBand featureBand, ManifestId manifestId) =>
-            new PackageId($"{manifestId}.Manifest-{featureBand}");
+            WorkloadInstallerFactory.GetWorkloadInstallType(featureBand, Path.GetDirectoryName(Environment.ProcessPath)) switch
+            {
+                InstallType.FileBased => new PackageId($"{manifestId}.Manifest-{featureBand}"),
+                InstallType.Msi => new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}"),
+                _ => throw new Exception(),
+            };
     }
 }
