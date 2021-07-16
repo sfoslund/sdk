@@ -95,13 +95,13 @@ namespace Microsoft.DotNet.Cli
 
         public static Option<bool> DebugOption() => new Option<bool>("--debug");
 
-        public static Option SelfContainedOption() =>
+        public static Option<bool> SelfContainedOption() =>
             new ForwardedOption<bool>(
                 "--self-contained",
                 CommonLocalizableStrings.SelfContainedOptionDescription)
             .ForwardAsMany(o => new string[] { $"-property:SelfContained={o}", "-property:_CommandLineDefinedSelfContained=true" });
 
-        public static Option NoSelfContainedOption() =>
+        public static Option<bool> NoSelfContainedOption() =>
             new ForwardedOption<bool>(
                 "--no-self-contained",
                 CommonLocalizableStrings.FrameworkDependentOptionDescription)
